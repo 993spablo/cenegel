@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador EGEL - Beta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
+
+  <div id="app" class="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 border border-slate-700">
+    
+    <!-- PANTALLA DE INICIO -->
+    <div id="screen-welcome" class="text-center space-y-6">
+      <h1 class="text-4xl font-extrabold text-indigo-400">Inicio</h1>
+      <p class="text-slate-300 text-lg leading-relaxed bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+        "este simulador es meramente de estudio y comprobar conocimientos, esta version es solo una beta y vendran mejoras con el paso del tiempo"
+      </p>
+      <div class="text-sm text-slate-400 space-y-1">
+        <p>• <strong>30 preguntas aleatorias</strong> de Conocimiento en Administración (de un banco de 60)</p>
+        <p>• <strong>20 preguntas aleatorias</strong> de Redacción Indirecta (de un banco de 30)</p>
+      </div>
+      <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition duration-200 transform hover:scale-105 shadow-lg">
+        Comenzar
+      </button>
+    </div>
+
+    <!-- PANTALLA DEL CUESTIONARIO -->
+    <div id="screen-quiz" class="hidden space-y-6">
+      <div class="flex justify-between items-center text-sm text-slate-400 border-b border-slate-700 pb-3">
+        <span id="quiz-category" class="font-semibold text-indigo-400">Categoría</span>
+        <span id="quiz-progress">Pregunta 1 de 50</span>
+      </div>
+
+      <div id="quiz-question" class="text-lg font-medium text-slate-100 min-h-[60px]">
+        Cargando pregunta...
+      </div>
+
+      <div id="quiz-options" class="space-y-3"></div>
+
+      <div class="flex justify-between items-center pt-4 border-t border-slate-700">
+        <button id="btn-next" onclick="nextQuestion()" disabled class="ml-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold rounded-lg transition">
+          Siguiente
+        </button>
+      </div>
+    </div>
+
+    <!-- PANTALLA DE RESULTADOS -->
+    <div id="screen-results" class="hidden space-y-6">
+      <h2 class="text-3xl font-bold text-center text-indigo-400">Resultados del Examen</h2>
+      <div id="score-summary" class="text-center text-xl font-semibold"></div>
+
+      <div class="max-h-80 overflow-y-auto space-y-4 pr-2" id="results-list"></div>
+
+      <!-- SECCIÓN DE TEMAS A ESTUDIAR -->
+      <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-4 text-sm">
+        <h3 class="text-lg font-bold text-amber-400 border-b border-slate-700 pb-2">Guía de Estudio Recomendada</h3>
+        
+        <div class="space-y-3 text-slate-300">
+          <div>
+            <h4 class="font-bold text-indigo-300">ÁREA 1. FINANZAS — PRIORIDAD ALTA</h4>
+            <p>Enfócate en razones financieras (Liquidez, Razón circulante, Prueba ácida, ROA, ROE), presupuestos (Maestro, Ventas, Producción), Punto de Equilibrio, Matemáticas financieras ($I = C\cdot i\cdot t$, $M = C(1+i)^n$), VPN, TIR, WACC, Capital Semilla y Factoraje.</p>
+          </div>
+          <div>
+            <h4 class="font-bold text-indigo-300">ÁREA 2. MERCADOTECNIA — PRIORIDAD ALTA</h4>
+            <p>Mercado potencial ($N \times \% \text{consumo} \times \text{per cápita} \times \text{precio}$), meta y cautivo. Segmentación, NOM-051, ciclo de vida del producto, canales de distribución (intensiva, selectiva, exclusiva), UEN y CRM.</p>
+          </div>
+          <div>
+            <h4 class="font-bold text-indigo-300">ÁREA 3. RECURSOS HUMANOS</h4>
+            <p>Perfil de puesto, Assessment Center, salarios (fijo, variable, mixto, emocional), Art. 28-A LFT, NOM-035, DNC y evaluación SERVQUAL.</p>
+          </div>
+          <div>
+            <h4 class="font-bold text-indigo-300">ÁREA 4. ADMINISTRACIÓN ESTRATÉGICA Y MARCO LEGAL</h4>
+            <p>Filosofía organizacional, FODA, Matriz de Ansoff, Joint Venture, Art. 46 Código de Comercio (10 años), ERP, WMS, PEPS/UEPS, Cadena de Valor y Balanced Scorecard.</p>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="location.reload()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition">
+        Reiniciar Simulador
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // BANCO DE 60 PREGUNTAS DE ADMINISTRACIÓN
+    const rawAdminQuestions = [
+      { q: "1. Una empresa de servicios bancarios realiza una evaluación de desempeño mediante encuestas a clientes y detecta que los asesores tienen alto conocimiento técnico pero carecen de escucha activa y empatía. ¿Qué elemento debe incluirse en el plan de capacitación?", options: ["Transmisión de información técnica", "Desarrollo de habilidades duras", "Desarrollo de actitudes e inteligencia emocional", "Capacitación en procesos normativos"], correct: 2 },
+      { q: "2. Conforme al Artículo 28 de la Ley Federal del Trabajo en México, cuando se contrata a un trabajador mexicano para prestar servicios en el extranjero, ¿cuál de las siguientes condiciones es de cumplimiento obligatorio?", options: ["Las condiciones laborales deben estar condicionadas a la productividad en el país de destino.", "El reclutamiento debe realizarse únicamente por agencias privadas internacionales.", "Las condiciones laborales deben ser dignas e igualitarias a las otorgadas a los trabajadores de ese país.", "El trabajador renuncia a la jurisdicción de las autoridades mexicanas al salir del país."], correct: 2 },
+      { q: "3. Una empresa manufacturera registra una rotación voluntaria del 35% en el personal contratado durante los primeros 3 meses debido a falsas expectativas de crecimiento. ¿Qué acción soluciona la problemática?", options: ["Implementar evaluaciones psicométricas adicionales en el proceso de selección", "Desarrollar políticas claras de contratación y planes de promoción interna", "Aumentar las sanciones disciplinarias en el Reglamento Interior de Trabajo", "Otorgar bonos extraordinarios por puntualidad y asistencia"], correct: 1 },
+      { q: "4. Con la entrada en vigor de la NOM-035 sobre factores de riesgo psicosocial en los centros de trabajo, ¿cuál es la necesidad prioritaria de capacitación para el personal directivo?", options: ["Adiestramiento en prevención de accidentes e incendios", "Instrucción en el diagnóstico e identificación de factores de riesgo psicosocial", "Cursos de actualización en higiene industrial", "Taller sobre primeros auxilios y protección civil"], correct: 1 },
+      { q: "5. De acuerdo con la Ley Federal del Trabajo, al actualizar el Reglamento Interior de Trabajo de una planta industrial, ¿qué elemento debe incluirse de manera obligatoria?", options: ["Tabulador de salarios por categoría laboral", "Normas y disposiciones disciplinarias y sus procedimientos de aplicación", "Metas anuales de productividad e incentivos financieros", "Plan maestro de capacitación y adiestramiento"], correct: 1 },
+      { q: "6. Una cadena de tiendas de autoservicio busca contratar ejecutivos de ventas cuyo enfoque principal sea la atención cálida y personalizada al cliente. ¿Qué competencias deben priorizarse en la selección?", options: ["Dominio de software estadístico y análisis de datos", "Facilidad de palabra y actitud de servicio", "Capacidad de negociación técnica y rigurosidad legal", "Trabajo individual bajo presión y orientación a costos"], correct: 1 },
+      { q: "7. Un trabajador temporal concluye su contrato de 3 meses. Durante la revisión del finiquito, el colaborador argumenta que realizó horas adicionales no cubiertas. ¿Qué concepto debe integrarse legalmente en el cálculo?", options: ["Prima de antigüedad equivalente a 12 días por año", "Indemnización constitucional de 90 días", "Horas extraordinarias no pagadas oportunamente", "Gratificación especial por culminación de proyecto"], correct: 2 },
+      { q: "8. Una firma multinacional busca seleccionar a su nuevo Director de Operaciones Internacionales. ¿Cuál es la técnica de selección más adecuada para evaluar sus competencias directivas?", options: ["Revisión documental y cotejo de currículum vitae", "Pruebas psicométricas tradicionales de inteligencia", "Assessment Center con simulaciones de toma de decisiones y entrevistas en profundidad", "Examen médico de salud integral y prueba antidoping"], correct: 2 },
+      { q: "9. Un trabajador percibe un sueldo base garantizado y una comisión dependiente del volumen de producción mensual alcanzado. ¿Qué tipo de política salarial aplica la organización?", options: ["Salario fijo", "Salario variable", "Salario mixto", "Salario por honorarios"], correct: 2 },
+      { q: "10. Un auditor detecta que los expedientes del personal de nuevo ingreso carecen de copias de identificación y constancias de retención fiscal. ¿Qué proceso del área de Recursos Humanos requiere una reestructuración inmediata?", options: ["Reclutamiento", "Selección", "Contratación e integración", "Capacitación"], correct: 2 },
+      { q: "11. Para reducir la rotación en una cadena minorista, el área de Recursos Humanos implementa flexibilidad de horarios y vales de despensa. ¿A qué estrategia salarial corresponde?", options: ["Salario emocional y prestaciones", "Indemnización laboral", "Percepción variable directa", "Honorarios profesionales"], correct: 0 },
+      { q: "12. Durante una revisión salarial, una empresa determina sustituir el esquema de comisiones por un pago mensual único sin variaciones según rendimiento. Este esquema se clasifica como:", options: ["Salario mixto", "Salario fijo", "Salario por destajo", "Participación de utilidades"], correct: 1 },
+      { q: "13. ¿Cuál es la principal ventaja de aplicar la técnica de Assessment Center en la selección de puestos gerenciales?", options: ["Reduce a cero los costos del proceso de selección.", "Permite evaluar el comportamiento del candidato en situaciones simuladas reales.", "Elimina la necesidad de realizar entrevistas individuales.", "Garantiza la retención a largo plazo del candidato contratado."], correct: 1 },
+      { q: "14. Una empresa detecta un incremento en los accidentes de trabajo leves dentro de la línea de ensamble. ¿Qué medida preventiva corresponde aplicar?", options: ["Actualizar el Reglamento Interior con multas económicas al trabajador", "Impartir un programa de adiestramiento en seguridad e higiene industrial", "Modificar el esquema de contratación a honorarios temporales", "Sustituir al personal operativo mediante despido justificativo"], correct: 1 },
+      { q: "15. Si una organización busca fomentar el sentido de pertenencia y compromiso ético en el personal directivo, ¿qué tipo de programa de desarrollo debe promover?", options: ["Capacitación en herramientas tecnológicas básicas", "Programa de desarrollo de liderazgo y valores organizacionales", "Ajuste masivo de bonos por productividad a corto plazo", "Cursos de actualización contable e impositiva"], correct: 1 },
+      { q: "16. Una empresa de calzado deportivo desea reunir a un grupo de 8 jóvenes para evaluar la percepción estética de un nuevo diseño mediante un moderador. ¿Qué técnica de investigación aplica?", options: ["Entrevista en profundidad", "Focus group", "Prueba de usabilidad", "Encuesta masiva estructurada"], correct: 1 },
+      { q: "17. Una refresquera planea lanzar una bebida en un mercado de 500,000 habitantes. El 40% consume refresco, con un consumo promedio per cápita de 4 litros anuales a un precio de $20 el litro. ¿Cuál es el mercado potencial en valor?", options: ["$4,000,000", "$16,000,000", "$20,000,000", "$40,000,000"], correct: 1 },
+      { q: "18. Una clínica veterinaria privada busca posicionar una guardería para mascotas destacando el afecto y la tranquilidad familiar. ¿Qué tipo de motivación proyecta la campaña?", options: ["Motivación de estatus y prestigio social", "Motivación afectiva y de protección familiar", "Motivación puramente económica y de ahorro", "Motivación funcional de bajo costo"], correct: 1 },
+      { q: "19. Según la NOM-051 en México, un cereal empaquetado que porta un sello de advertencia por exceso de azúcares debe aplicar la siguiente restricción en su empaque:", options: ["Eliminar personajes animados o infantiles del empaque primario", "Retirar la tabla nutricional del empaque posterior", "Modificar el logotipo oficial de la marca", "Utilizar únicamente empaques transparentes"], correct: 0 },
+      { q: "20. Una empresa de fertilizantes sustentables lanza un producto innovador al mercado B2C. Para validar las ventajas del producto directamente con el consumidor final, la estrategia promocional idónea es:", options: ["Publicidad masiva en televisión nacional", "Muestreo y demostraciones directas de producto", "Descuentos por pronto pago a distribuidores", "Patrocinio de eventos deportivos internacionales"], correct: 1 },
+      { q: "21. Un fabricante de maquinaria agrícola requiere enfocar su discurso de ventas resaltando la vida útil superior y la durabilidad física del metal en los equipos. ¿Qué atributo tangible comunica?", options: ["Maleabilidad media", "Alta resistencia al desgaste y durabilidad", "Estética y diseño de vanguardia", "Facilidad de transporte y ligereza"], correct: 1 },
+      { q: "22. Una plataforma móvil de transporte con baja cuota de mercado decide lanzar promociones agresivas de tarifa reducida en sus rutas actuales para ganar clientes a la competencia. Según la Matriz de Ansoff, aplica una estrategia de:", options: ["Desarrollo de producto", "Desarrollo de mercado", "Penetración de mercado", "Diversificación"], correct: 2 },
+      { q: "23. Una empresa con alta presencia en el mercado nacional lanza una línea exclusiva para el segmento socioeconómico A/B en el extranjero. ¿Qué criterio de segmentación utilizó?", options: ["Geográfico y psicográfico", "Demográfico y conductual", "Socioeconómico y geográfico", "Conductual y tecnográfico"], correct: 2 },
+      { q: "24. Si un producto se encuentra en su fase de madurez y enfrenta una alta competencia, ¿cuál es el objetivo de la estrategia de precios?", options: ["Fijar precios altos de descremado para recuperar la inversión", "Mantener precios competitivos o defensivos para sostener la participación", "Vender por debajo del costo marginal para eliminar competidores", "Aumentar progresivamente el precio sin añadir valor percibido"], correct: 1 },
+      { q: "25. Un restaurante de comida rápida observa que las ventas disminuyen por lentitud en las entregas. Para solucionar la problemática sin alterar el producto, el ajuste debe realizarse en:", options: ["La plaza y la logística de distribución", "La estrategia de relaciones públicas", "El empaque secundario del alimento", "El precio de los platillos"], correct: 0 },
+      { q: "26. ¿Qué indicador permite evaluar el grado de reconocimiento de una marca en la mente de los consumidores frente a sus competidores directos?", options: ["Tasa de rotación de inventarios", "Posicionamiento de marca (Top of Mind)", "Índice de apalancamiento financiero", "Rendimiento sobre el capital invertido (ROE)"], correct: 1 },
+      { q: "27. Un estudio de mercado revela que los consumidores perciben dos marcas de detergente como idénticas en calidad. Para diferenciar su oferta, la empresa decide ofrecer empaques biodegradables. Esta acción fortalece:", options: ["El atributo intrínseco del contenido químico", "La ventaja competitiva basada en empaque y valor percibido", "El canal de distribución mayorista", "El volumen de producción a escala"], correct: 1 },
+      { q: "28. Una tienda de ropa femenina analiza las compras pasadas de sus clientes registrados para enviar ofertas personalizadas a su correo. Esta técnica corresponde a:", options: ["Mercadotecnia masiva indiferenciada", "Mercadotecnia relacional (CRM)", "Publicidad de respuesta directa tradicional", "Venta al por mayor no personalizada"], correct: 1 },
+      { q: "29. Si una marca busca ingresar a un mercado internacional con un producto idéntico al local pero adaptando el mensaje publicitario a la cultura receptora, aplica una estrategia de:", options: ["Adaptación de producto y estandarización de promoción", "Estandarización de producto y adaptación de promoción", "Invención dual de producto y mensaje", "Estandarización global completa"], correct: 1 },
+      { q: "30. ¿Cuál es la técnica cuantitativa de investigación de mercado que permite recolectar datos de una muestra representativa mediante un cuestionario estructurado?", options: ["Focus group", "Encuesta personal o telefónica", "Entrevista clínica en profundidad", "Observación no participante cualitativa"], correct: 1 },
+      { q: "31. Una empresa evalúa un proyecto de inversión con una inversión inicial de $100,000,000 y un valor presente de flujos de efectivo de $130,000,000. ¿Cuál es su Índice de Rentabilidad?", options: ["0.76", "1.30", "0.30", "1.76"], correct: 1 },
+      { q: "32. Una corporación adquiere una deuda de $500,000 a una tasa de interés simple del 18% anual. Si al finalizar el plazo pagó un monto total de $545,000, ¿cuál fue el plazo del préstamo en meses?", options: ["4 meses", "6 meses", "8 meses", "12 meses"], correct: 1 },
+      { q: "33. Una startup tecnológica en etapa de desarrollo de prototipo requiere un financiamiento inicial de $300,000 y asesoría técnica para estructurar su modelo de negocio. La fuente de financiamiento idónea es:", options: ["Emisión de obligaciones corporativas", "Capital semilla", "Crédito hipotecario industrial", "Factoraje financiero"], correct: 1 },
+      { q: "34. Una empresa textil enfrenta problemas temporal de liquidez por ventas cobradas a 90 días. Requiere efectivo inmediato para adquirir materia prima sin contraer una deuda bancaria a largo plazo. La opción conveniente es:", options: ["Factoraje financiero", "Arrendamiento puro", "Emisión de acciones preferentes", "Crédito refaccionario"], correct: 0 },
+      { q: "35. Un inversionista institucional busca integrar un portafolio de inversión con un perfil conservador para $5,000,000. ¿Qué distribución de activos es congruente?", options: ["$4,500,000 en Cetes/bonos gubernamentales y $500,000 en acciones", "$500,000 en bonos y $4,500,000 en acciones de alta volatilidad", "$2,500,000 en criptoactivos y $2,500,000 en acciones", "$5,000,000 en acciones de empresas emergentes"], correct: 0 },
+      { q: "36. ¿Qué estado financiero básico muestra el desempeño operativo de una entidad económica mediante la diferencia entre sus ingresos, costos y gastos en un periodo determinado?", options: ["Estado de Situación Financiera", "Estado de Resultados Integral", "Estado de Flujos de Efectivo", "Estado de Cambios en el Capital Contable"], correct: 1 },
+      { q: "37. Una empresa presenta un activo circulante de $200,000 y un pasivo circulante de $100,000. ¿Cuál es su Razón de Liquidez Corriente?", options: ["0.5", "1.0", "2.0", "3.0"], correct: 2 },
+      { q: "38. La diferencia entre el Activo Circulante y el Pasivo Circulante operacional de una entidad se denomina:", options: ["Capital de trabajo neto", "Utilidad antes de impuestos (UAI)", "Valor Presente Neto (VPN)", "Flujo de efectivo descontado"], correct: 0 },
+      { q: "39. Una empresa adquiere maquinaria por $1,000,000 pagando una renta mensual por su uso sin opción de compra ni propiedad del activo al final del contrato. Este esquema se conoce como:", options: ["Arrendamiento financiero", "Arrendamiento puro", "Crédito hipotecario", "Factoraje con recurso"], correct: 1 },
+      { q: "40. Si el Valor Presente Neto (VPN) de un proyecto de inversión calculado a una tasa de descuento del 10% es igual a cero, significa que:", options: ["El proyecto arroja pérdidas financieras directas.", "La Tasa Interna de Retorno (TIR) es exactamente igual al 10%.", "El proyecto debe rechazarse inmediatamente.", "El tiempo de recuperación es infinito."], correct: 1 },
+      { q: "41. ¿Cuál es la herramienta financiera que proyecta las entradas y salidas de efectivo esperadas en una organización para anticipar faltantes de liquidez?", options: ["Presupuesto de capital", "Balance general proforma", "Presupuesto de flujo de caja (Cash Flow)", "Estado de variaciones en el capital"], correct: 2 },
+      { q: "42. Si una empresa incrementa su apalancamiento financiero mediante la emisión de deuda a tasa fija para financiar proyectos rentables, la consecuencia sobre el rendimiento para los accionistas es:", options: ["Incrementa el riesgo y potencializa el rendimiento sobre el capital", "Disminuye el riesgo operativo a cero", "Garantiza un costo de capital nulo", "Elimina el pago de intereses adeudados"], correct: 0 },
+      { q: "43. Un analista financiero requiere medir la capacidad de la empresa para cubrir sus obligaciones de corto plazo utilizando exclusivamente sus activos más líquidos, excluyendo los inventarios. El indicador aplicable es:", options: ["Prueba del ácido (Liquidez severa)", "Margen de utilidad bruta", "Rotación de activo total", "Razón de endeudamiento"], correct: 0 },
+      { q: "44. Una compañía cotizada decide reinvertir el 100% de sus utilidades en la expansión de plantas en lugar de repartir dividendos. Esta decisión corresponde a la política de:", options: ["Estructura de capital", "Retención de utilidades y dividendos", "Financiamiento bancario", "Gestión de tesorería a corto plazo"], correct: 1 },
+      { q: "45. ¿Cómo se calcula el costo promedio ponderado de capital (WACC)?", options: ["Promediando los ingresos de ventas de los últimos tres años", "Ponderando el costo de las distintas fuentes de financiamiento (deuda y capital propio) según su proporción en la estructura financiera", "Sumando los activos fijos más la utilidad neta dividida entre la inflación", "Restando los pasivos totales al activo circulante ajustado"], correct: 1 },
+      { q: "46. Dos empresas competidoras del sector cosmético deciden unirse para constituir una nueva sociedad mercantil independiente enfocada en la investigación de nuevos productos, manteniendo la opción legal de disolverse en el futuro. Esta alianza es una:", options: ["Fusión por absorción", "Joint venture (Empresa conjunta)", "Adquisición hostil", "Franquicia comercial"], correct: 1 },
+      { q: "47. En un análisis FODA interno de una empresa ecológica, la falta de capital de trabajo suficiente constituye una __________, mientras que contar con capacidad técnica instalada no utilizada representa una __________.", options: ["amenaza - oportunidad", "debilidad - fortaleza", "fortaleza - debilidad", "oportunidad - amenaza"], correct: 1 },
+      { q: "48. Una panificadora con alcance nacional requiere estandarizar los criterios de liderazgo de sus supervisores de planta para coordinar los programas de producción. ¿Qué acción estratégica debe promover?", options: ["Programa de capacitación enfocado a la gerencia media", "Aumento generalizado del presupuesto publicitario", "Campaña masiva de prestaciones al personal operativo", "Reducción de los puntos de venta mayoristas"], correct: 0 },
+      { q: "49. Una refaccionaria administra 20,000 artículos de manera manual, lo que genera constantes desabastos de piezas en existencia y compras innecesarias. ¿Qué sistema tecnológico resuelve esta problemática integralmente?", options: ["Enterprise Resource Planning (ERP) / Warehouse Management System (WMS)", "Customer Relationship Management (CRM)", "Social Media Management", "Sistema de facturación electrónica básica"], correct: 0 },
+      { q: "50. Una comercializadora establece como meta incrementar un 5% el indicador de pedidos entregados a tiempo a sus clientes. ¿Qué acción operativa permite alcanzar este objetivo?", options: ["Procesar los pedidos de clientes mediante módulos integrados en un ERP", "Ampliar los días de entrega en el contrato de compra", "Mantener una baja rotación de inventarios sin sistema informático", "Reducir las compras de mercancía a proveedores clave"], correct: 0 },
+      { q: "51. Relacione el área funcional con su indicador operativo correspondiente: 1. Producción, 2. Mercadotecnia, 3. Finanzas con a) Defectos por millón (PPM), b) Posicionamiento (Top of Mind), c) Apalancamiento.", options: ["1a, 2b, 3c", "1b, 2a, 3c", "1c, 2b, 3a", "1a, 2c, 3b"], correct: 0 },
+      { q: "52. Una pastelería detecta que pierde clientes porque los insumos se compran de forma improvisada a última hora a precios elevados. Para solucionar este problema, el área que debe reestructurarse es:", options: ["Gestión de compras y abastecimiento", "Administración de ventas", "Dirección general", "Relaciones públicas"], correct: 0 },
+      { q: "53. Para evaluar la eficiencia operativa del almacén de una farmacia tras implementar el método PEPS, el indicador clave de desempeño (KPI) es:", options: ["Reducción en las unidades de mercancía caducada", "Aumento en el número de contrataciones", "Porcentaje de incremento en el precio de venta", "Reducción de la prima de riesgo del IMSS"], correct: 0 },
+      { q: "54. Si una organización analiza elementos del macroentorno externo como cambios en regulaciones gubernamentales y tendencias demográficas, realiza un análisis:", options: ["PESTEL", "Matriz BCG", "Cadena de valor de Porter", "Diagrama de Ishikawa"], correct: 0 },
+      { q: "55. Una empresa de alimentos decide adquirir a su principal proveedor de empaques para asegurar el suministro de insumos a menor costo. Esta estrategia se clasifica como:", options: ["Integración vertical hacia atrás", "Integración vertical hacia adelante", "Diversificación conglomerada", "Integración horizontal"], correct: 0 },
+      { q: "56. Según Michael Porter, una empresa que busca obtener la preferencia del mercado ofreciendo productos con características únicas valoradas por los clientes sigue una estrategia genérica de:", options: ["Liderazgo en costos", "Diferenciación", "Enfoque o alta segmentación de costo", "Descremado de mercado"], correct: 1 },
+      { q: "57. Una herramienta estratégica que permite analizar las actividades primarias y de soporte de una empresa para identificar fuentes de ventaja competitiva es:", options: ["La cadena de valor", "Las cinco fuerzas de Porter", "La matriz Ansoff", "El balance de comprobación"], correct: 0 },
+      { q: "58. Una empresa diversificada evalúa una Unidad Estratégica de Negocios (UEN) que posee una alta participación de mercado en una industria de bajo crecimiento. En la Matriz BCG, esta unidad se clasifica como:", options: ["Vaca generadora de efectivo", "Estrella", "Interrogación", "Perro"], correct: 0 },
+      { q: "59. El proceso que consiste en comparar las prácticas, procesos e indicadores de desempeño de una empresa con los líderes de la industria para implementar mejoras se denomina:", options: ["Benchmarking", "Reingeniería", "Outsourcing", "Empowerment"], correct: 0 },
+      { q: "60. Durante la fase de control del proceso administrativo, la dirección compara los resultados reales obtenidos contra los estándares preestablecidos. Si se detectan desviaciones significativas, la acción inmediata debe ser:", options: ["Aplicar medidas correctivas sobre las causas raíz del desempeño", "Ignorar las variaciones si el presupuesto global no se sobrepasó", "Modificar retroactivamente los planes para hacerlos coincidir con los resultados", "Despedir inmediatamente al personal operativo"], correct: 0 }
+    ];
+
+    // BANCO DE 30 PREGUNTAS DE REDACCIÓN INDIRECTA
+    const rawRedaccionQuestions = [
+      { q: "1. Seleccione la opción con acentuación ortográfica correcta:", options: ["El directivo solicito la revisión de la estrategia.", "El directivo solicitó la revisión de la estrategia.", "El directivo solicito la revición de la estrategía.", "El directivo solicitó la revicion de la estrategia."], correct: 1 },
+      { q: "2. Elija la oración que cumple con las reglas de concordancia entre sujeto y verbo:", options: ["La mayoría de los empleados expresaron sus dudas.", "La mayoría de los empleados expresó sus dudas.", "Las mayoría de los empleados expresaron dudas.", "La mayoría de empleados expresaran sus dudas."], correct: 1 },
+      { q: "3. Elija la opción redactada sin el vicio de dequeísmo:", options: ["El director está seguro que obtendremos el crédito.", "El director está seguro de que obtendremos el crédito.", "El director opina de que el proyecto es viable.", "El director piensa de que todo saldrá bien."], correct: 1 },
+      { q: "4. Seleccione el enunciado que utiliza correctamente los signos de puntuación:", options: ["Sin embargo el plan requiere ajustes.", "Sin embargo, el plan requiere ajustes.", "Sin embargo el plan, requiere ajustes.", "Sin embargo, el plan requiere, ajustes."], correct: 1 },
+      { q: "5. Elija la opción redactada sin pleonasmo o redundancia:", options: ["La empresa va a volver a repetir el proceso.", "La empresa va a repetir el proceso la próxima semana.", "La empresa reincidirá de nuevo en el examen.", "La empresa repetirá nuevamente la prueba."], correct: 1 },
+      { q: "6. Identifique el uso correcto de las mayúsculas:", options: ["El Licenciado Pérez acudió a la Secretaría de Hacienda.", "El licenciado Pérez acudió a la Secretaría de Hacienda y Crédito Público.", "El licenciado Pérez acudió a la secretaría de hacienda.", "El Licenciado Pérez acudió a la secretaría de hacienda."], correct: 1 },
+      { q: "7. ¿Qué opción presenta un uso correcto de la tilde diacrítica?", options: ["Es necesario que el contador de su visto bueno.", "Es necesario que el contador dé su visto bueno.", "Es necesario que el contador de su visto buéno.", "Es necesario que el contador dé su vísto bueno."], correct: 1 },
+      { q: "8. Seleccione la oración con el uso adecuado de los conectores lógicos:", options: ["Las ventas subieron; por lo tanto, las utilidades cayeron.", "Las ventas subieron; no obstante, las utilidades cayeron.", "Las ventas subieron; es decir, las utilidades cayeron.", "Las ventas subieron; en consecuencia, las utilidades cayeron."], correct: 1 },
+      { q: "9. Elija la opción redactada sin impropiedad léxica:", options: ["El abogado detentaba diez años de experiencia.", "El abogado poseía una amplia experiencia en el sector.", "El abogado adolecía de diez años de experiencia.", "El abogado adolecía con amplia experiencia."], correct: 1 },
+      { q: "10. Seleccione la opción con la ortografía correcta (uso de C, S y Z):", options: ["La escaces de insumos provocó la suspensión.", "La escasez de insumos provocó la suspensión.", "La escasez de insumos provocó la suspención.", "La escaces de insumos provocó la suspención."], correct: 1 },
+      { q: "11. Identifique el enunciado redactado en voz activa y con estructura más clara:", options: ["Las observaciones fueron hechas por el auditor.", "El auditor entregó las observaciones a tiempo.", "A tiempo las observaciones por el auditor fueron hechas.", "Por parte del auditor las observaciones fueron hechas."], correct: 1 },
+      { q: "12. Elija la opción con el uso correcto de la locución prepositiva:", options: ["En relación a el contrato laboral...", "En relación con el contrato laboral...", "En relación al contrato laboral...", "Con relación a el contrato laboral..."], correct: 1 },
+      { q: "13. Seleccione la oración con la forma impersonal correcta del verbo haber:", options: ["Hubieron muchos candidatos postulados.", "Hubo muchos candidatos postulados.", "Habían muchos candidatos postulados.", "Habrán muchos candidatos postulados."], correct: 1 },
+      { q: "14. Identifique la oración redactada en tono formal para un correo institucional:", options: ["Ahí me avisas si necesitas algo más.", "Quedo a sus órdenes para cualquier duda o aclaración.", "Sin nada más que decir me despido esperando respuesta rápida.", "Te mando esto para ver si te gusta."], correct: 1 },
+      { q: "15. Elija la opción con la ortografía correcta del verbo absorber:", options: ["La empresa absorbio las pérdidas.", "La empresa absorbió las pérdidas.", "La empresa absorbió las perdidas.", "La empresa absorbio las perdidas."], correct: 1 },
+      { q: "16. Seleccione el enunciado con concordancia temporal correcta:", options: ["Si la junta aprueba el proyecto, iniciará la ejecución.", "Si la junta aprobara el proyecto, iniciará la ejecución.", "Si la junta aprobó el proyecto, iniciará la ejecución.", "Si la junta aprueba el proyecto, iniciaría la ejecución."], correct: 0 },
+      { q: "17. Identifique la opción que evita el gerundio de posterioridad o especificación incorrecto:", options: ["El consultor entregó el informe conteniendo recomendaciones.", "El consultor entregó el informe, el cual contiene recomendaciones.", "El consultor redactó el archivo conteniendo fallas.", "El consultor envió la carta conteniendo anexos."], correct: 1 },
+      { q: "18. Uso adecuado de los dos puntos en un escrito formal:", options: ["La reunión abordó: tres temas.", "La reunión abordó tres temas: presupuesto, personal y metas.", "La reunión: abordó tres temas presupuesto.", "La reunión abordó tres: temas presupuesto."], correct: 1 },
+      { q: "19. Seleccione la opción con la referencia pronominal plural correcta:", options: ["A los asesores se le entregó los premios.", "A los asesores se les entregaron sus reconocimientos.", "A los asesores se le entregaron sus premios.", "A los asesores se les entregó su premio."], correct: 1 },
+      { q: "20. Identifique la oración sin ambigüedad o anfibología:", options: ["El gerente atendió al cliente en su oficina estando molesto.", "Estando molesto el cliente, el gerente lo atendió en la oficina.", "El gerente atendió en la oficina al cliente molesto en su oficina.", "El gerente atendió molesto al cliente molesto."], correct: 1 },
+      { q: "21. Seleccione la opción con la redacción formal más adecuada para una propuesta comercial:", options: ["Estimado cliente, le mando la propuesta para ver si le gusta.", "Estimado cliente: Por medio de la presente, me dirijo a usted para someter a su consideración nuestra propuesta.", "Qué tal, le envío esta propuesta para que la revise cuando tenga espacio.", "Estimado cliente; Le adjunto la propuesta comercial esperando aprobación."], correct: 1 },
+      { q: "22. Elija el enunciado redactado en un tono profesional e impersonal para un informe:", options: ["Creemos firmemente que debemos recortar los gastos.", "Se recomienda reducir los gastos administrativos para optimizar el margen.", "Considero que tendríamos que bajarle a los gastos.", "Pensamos que recortar gastos es la mejor idea."], correct: 1 },
+      { q: "23. Identifique el texto que mantiene la coherencia y unidad temática:", options: ["La capacitación mejora el desempeño. Los inventarios deben auditarse.", "La capacitación continua mejora el desempeño del personal. Por ello, la empresa diseñó un plan anual de formación.", "La capacitación mejora el desempeño. Las acciones cotizan al alza.", "La capacitación mejora el desempeño. El edificio requiere pintura."], correct: 1 },
+      { q: "24. Seleccione la opción que presenta el uso correcto de las comillas en cita directa:", options: ["El Director afirmó: 'La innovación es la clave'.", "El Director General afirmó: \"La innovación es la clave para la sostenibilidad financiera\".", "El Director 'afirmó': La innovación es la clave.", "El Director afirmó que: \"La innovación es la clave\"."], correct: 1 },
+      { q: "25. Seleccione la opción que cumple con las reglas ortográficas del uso de B y V:", options: ["La comitiva evaluó la viabilidad del proyecto con gran beneplácito.", "La comitiva evaluó la biabilidad del proyecto con gran beneplácito.", "La comitiva evaluó la viabilidad del proyecto con gran veneplácito.", "La comitiva evaluó la biabilidad con gran veneplácito."], correct: 0 },
+      { q: "26. Elija la opción con acentuación diacrítica correcta en la locución 'aun cuando':", options: ["Aún cuando se presentaron retrasos, se logró cumplir.", "Aun cuando se presentaron retrasos, se logró cumplir con el presupuesto.", "Aun cuando se presentaron retrasos, se logro cumplir.", "Aún cuando se presentaron retrasos, se logro cumplir."], correct: 1 },
+      { q: "27. Seleccione la opción redactada sin incorrecciones ortográficas:", options: ["La compañía decidió reestructurar su departamento de logística.", "La compañía decidió reestructurar su departamento de logísti-ca.", "La compañia decidió reestructurar su departamento.", "La compañía decidio reestructurar su departamento."], correct: 0 },
+      { q: "28. Identifique la opción que presenta corrección de estilo para evitar la voz pasiva:", options: ["Las nuevas políticas fueron implementadas por Recursos Humanos.", "El departamento de Recursos Humanos implementó las nuevas políticas.", "Por parte de Recursos Humanos las políticas fueron hechas.", "Las políticas se implementaron por Recursos Humanos."], correct: 1 },
+      { q: "29. Seleccione la opción con la ortografía correcta para el uso de la Y y LL:", options: ["El proyecto requiere la inclusión de nuevos hallazgos.", "El proyecto requiere la inclusión de nuevos hayazgos.", "El proyecto requiere la incluyón de nuevos hallazgos.", "El proyecto requiere la inclución de nuevos hayazgos."], correct: 0 },
+      { q: "30. Elija la redacción adecuada de una despedida en correo institucional:", options: ["Sin otro particular por el momento, quedo a sus órdenes para cualquier aclaración.", "Ya no tengo más que decir, ahí me avisa si ocupa algo.", "Habiendo dicho esto me despido esperando conteste.", "Sin nada más que agregar ahí estamos en contacto."], correct: 0 }
+    ];
+
+    // FUNCIÓN PARA MEZCLAR Y SELECCIONAR MUESTRAS ALEATORIAS
+    function getRandomSample(array, count) {
+      const shuffled = [...array].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    }
+
+    let currentQuestionIndex = 0;
+    let allQuestions = [];
+    let userAnswers = [];
+    let selectedOption = null;
+
+    function startQuiz() {
+      // Muestra aleatoria: 30 de Administración y 20 de Redacción
+      const sampledAdmin = getRandomSample(rawAdminQuestions, 30).map(q => ({ ...q, category: "Administración" }));
+      const sampledRedaccion = getRandomSample(rawRedaccionQuestions, 20).map(q => ({ ...q, category: "Redacción Indirecta" }));
+
+      allQuestions = [...sampledAdmin, ...sampledRedaccion];
+      currentQuestionIndex = 0;
+      userAnswers = [];
+
+      document.getElementById('screen-welcome').classList.add('hidden');
+      document.getElementById('screen-quiz').classList.remove('hidden');
+      showQuestion();
+    }
+
+    function showQuestion() {
+      selectedOption = null;
+      document.getElementById('btn-next').disabled = true;
+
+      const q = allQuestions[currentQuestionIndex];
+      document.getElementById('quiz-category').innerText = q.category;
+      document.getElementById('quiz-progress').innerText = `Pregunta ${currentQuestionIndex + 1} de ${allQuestions.length}`;
+      document.getElementById('quiz-question').innerText = q.q;
+
+      const optionsContainer = document.getElementById('quiz-options');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-900/50 hover:bg-slate-700/50 transition duration-150 flex items-center gap-3";
+        btn.innerHTML = `<span class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-800 text-xs font-bold border border-slate-600">${String.fromCharCode(65 + idx)}</span> <span>${opt}</span>`;
+        btn.onclick = () => selectOption(idx, btn);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectOption(index, btnElement) {
+      selectedOption = index;
+      const buttons = document.getElementById('quiz-options').children;
+      for (let btn of buttons) {
+        btn.classList.remove('border-indigo-500', 'bg-indigo-950/40');
+      }
+      btnElement.classList.add('border-indigo-500', 'bg-indigo-950/40');
+      document.getElementById('btn-next').disabled = false;
+    }
+
+    function nextQuestion() {
+      userAnswers.push(selectedOption);
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex < allQuestions.length) {
+        showQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('screen-quiz').classList.add('hidden');
+      document.getElementById('screen-results').classList.remove('hidden');
+
+      let score = 0;
+      const resultsList = document.getElementById('results-list');
+      resultsList.innerHTML = '';
+
+      allQuestions.forEach((q, idx) => {
+        const isCorrect = userAnswers[idx] === q.correct;
+        if (isCorrect) score++;
+
+        const item = document.createElement('div');
+        item.className = `p-4 rounded-xl border ${isCorrect ? 'border-emerald-800/60 bg-emerald-950/20' : 'border-rose-800/60 bg-rose-950/20'}`;
+        item.innerHTML = `
+          <div class="flex items-start gap-2">
+            <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isCorrect ? '✓' : '✗'}</span>
+            <div class="text-sm space-y-1">
+              <p class="font-medium text-slate-200">${q.q}</p>
+              <p class="text-xs text-slate-400">Tu respuesta: <span class="${isCorrect ? 'text-emerald-300' : 'text-rose-300'}">${q.options[userAnswers[idx]]}</span></p>
+              ${!isCorrect ? `<p class="text-xs text-emerald-400">Correcta: ${q.options[q.correct]}</p>` : ''}
+            </div>
+          </div>
+        `;
+        resultsList.appendChild(item);
+      });
+
+      document.getElementById('score-summary').innerText = `Aciertos: ${score} de ${allQuestions.length} (${((score/allQuestions.length)*100).toFixed(1)}%)`;
+    }
+  </script>
+</body>
+</html>
