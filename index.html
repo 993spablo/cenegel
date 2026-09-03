@@ -18,8 +18,8 @@
         "este simulador es meramente de estudio y comprobar conocimientos, esta version es solo una beta y vendran mejoras con el paso del tiempo"
       </p>
       <div class="text-sm text-slate-400 space-y-1">
-        <p>• <strong>30 preguntas aleatorias</strong> de Conocimiento en Administración (de un banco de 60)</p>
-        <p>• <strong>20 preguntas aleatorias</strong> de Redacción Indirecta (de un banco de 30)</p>
+        <p>• <strong>Bloque 1:</strong> 30 preguntas sin repetir de Administración (al azar del banco de 60)</p>
+        <p>• <strong>Bloque 2:</strong> 20 preguntas sin repetir de Redacción Indirecta (al azar del banco de 30)</p>
       </div>
       <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition duration-200 transform hover:scale-105 shadow-lg">
         Comenzar
@@ -49,7 +49,13 @@
     <!-- PANTALLA DE RESULTADOS -->
     <div id="screen-results" class="hidden space-y-6">
       <h2 class="text-3xl font-bold text-center text-indigo-400">Resultados del Examen</h2>
-      <div id="score-summary" class="text-center text-xl font-semibold"></div>
+      
+      <!-- EVALUACIÓN Y CALIFICACIÓN -->
+      <div class="text-center p-6 rounded-xl bg-slate-900/80 border border-slate-700 space-y-2">
+        <div id="score-summary" class="text-2xl font-bold text-slate-100"></div>
+        <div id="score-percentage" class="text-lg font-medium text-slate-300"></div>
+        <div id="score-dictamen" class="text-xl font-extrabold uppercase py-2 px-4 rounded-lg inline-block mt-2"></div>
+      </div>
 
       <div class="max-h-80 overflow-y-auto space-y-4 pr-2" id="results-list"></div>
 
@@ -126,7 +132,7 @@
       { q: "37. Una empresa presenta un activo circulante de $200,000 y un pasivo circulante de $100,000. ¿Cuál es su Razón de Liquidez Corriente?", options: ["0.5", "1.0", "2.0", "3.0"], correct: 2 },
       { q: "38. La diferencia entre el Activo Circulante y el Pasivo Circulante operacional de una entidad se denomina:", options: ["Capital de trabajo neto", "Utilidad antes de impuestos (UAI)", "Valor Presente Neto (VPN)", "Flujo de efectivo descontado"], correct: 0 },
       { q: "39. Una empresa adquiere maquinaria por $1,000,000 pagando una renta mensual por su uso sin opción de compra ni propiedad del activo al final del contrato. Este esquema se conoce como:", options: ["Arrendamiento financiero", "Arrendamiento puro", "Crédito hipotecario", "Factoraje con recurso"], correct: 1 },
-      { q: "40. Si el Valor Presente Neto (VPN) de un proyecto de inversión calculado a una tasa de descuento del 10% es igual a cero, significa que:", options: ["El proyecto arroja pérdidas financieras directas.", "La Tasa Interna de Retorno (TIR) es exactamente igual al 10%.", "El proyecto debe rechazarse inmediatamente.", "El tiempo de recuperación es infinito."], correct: 1 },
+      { q: "40. Si el Valor Presente Neto (VPN) de un proyecto de inversión calculated a una tasa de descuento del 10% es igual a cero, significa que:", options: ["El proyecto arroja pérdidas financieras directas.", "La Tasa Interna de Retorno (TIR) es exactamente igual al 10%.", "El proyecto debe rechazarse inmediatamente.", "El tiempo de recuperación es infinito."], correct: 1 },
       { q: "41. ¿Cuál es la herramienta financiera que proyecta las entradas y salidas de efectivo esperadas en una organización para anticipar faltantes de liquidez?", options: ["Presupuesto de capital", "Balance general proforma", "Presupuesto de flujo de caja (Cash Flow)", "Estado de variaciones en el capital"], correct: 2 },
       { q: "42. Si una empresa incrementa su apalancamiento financiero mediante la emisión de deuda a tasa fija para financiar proyectos rentables, la consecuencia sobre el rendimiento para los accionistas es:", options: ["Incrementa el riesgo y potencializa el rendimiento sobre el capital", "Disminuye el riesgo operativo a cero", "Garantiza un costo de capital nulo", "Elimina el pago de intereses adeudados"], correct: 0 },
       { q: "43. Un analista financiero requiere medir la capacidad de la empresa para cubrir sus obligaciones de corto plazo utilizando exclusivamente sus activos más líquidos, excluyendo los inventarios. El indicador aplicable es:", options: ["Prueba del ácido (Liquidez severa)", "Margen de utilidad bruta", "Rotación de activo total", "Razón de endeudamiento"], correct: 0 },
@@ -183,10 +189,14 @@
       { q: "30. Elija la redacción adecuada de una despedida en correo institucional:", options: ["Sin otro particular por el momento, quedo a sus órdenes para cualquier aclaración.", "Ya no tengo más que decir, ahí me avisa si ocupa algo.", "Habiendo dicho esto me despido esperando conteste.", "Sin nada más que agregar ahí estamos en contacto."], correct: 0 }
     ];
 
-    // FUNCIÓN PARA MEZCLAR Y SELECCIONAR MUESTRAS ALEATORIAS
-    function getRandomSample(array, count) {
-      const shuffled = [...array].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, count);
+    // ALGORITMO FISHER-YATES PARA MEZCLAR SIN REPETIR
+    function shuffleAndSample(array, count) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy.slice(0, count);
     }
 
     let currentQuestionIndex = 0;
@@ -195,10 +205,13 @@
     let selectedOption = null;
 
     function startQuiz() {
-      // Muestra aleatoria: 30 de Administración y 20 de Redacción
-      const sampledAdmin = getRandomSample(rawAdminQuestions, 30).map(q => ({ ...q, category: "Administración" }));
-      const sampledRedaccion = getRandomSample(rawRedaccionQuestions, 20).map(q => ({ ...q, category: "Redacción Indirecta" }));
+      // 1° Bloque: 30 de Administración al azar sin repetir
+      const sampledAdmin = shuffleAndSample(rawAdminQuestions, 30).map(q => ({ ...q, category: "Administración" }));
+      
+      // 2° Bloque: 20 de Redacción Indirecta al azar sin repetir
+      const sampledRedaccion = shuffleAndSample(rawRedaccionQuestions, 20).map(q => ({ ...q, category: "Redacción Indirecta" }));
 
+      // Se concatenan asegurando que las de Administración salgan primero
       allQuestions = [...sampledAdmin, ...sampledRedaccion];
       currentQuestionIndex = 0;
       userAnswers = [];
@@ -213,7 +226,7 @@
       document.getElementById('btn-next').disabled = true;
 
       const q = allQuestions[currentQuestionIndex];
-      document.getElementById('quiz-category').innerText = q.category;
+      document.getElementById('quiz-category').innerText = `Bloque: ${q.category}`;
       document.getElementById('quiz-progress').innerText = `Pregunta ${currentQuestionIndex + 1} de ${allQuestions.length}`;
       document.getElementById('quiz-question').innerText = q.q;
 
@@ -268,7 +281,7 @@
           <div class="flex items-start gap-2">
             <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isCorrect ? '✓' : '✗'}</span>
             <div class="text-sm space-y-1">
-              <p class="font-medium text-slate-200">${q.q}</p>
+              <p class="font-medium text-slate-200"><span class="text-xs text-indigo-400 font-semibold">[${q.category}]</span> ${q.q}</p>
               <p class="text-xs text-slate-400">Tu respuesta: <span class="${isCorrect ? 'text-emerald-300' : 'text-rose-300'}">${q.options[userAnswers[idx]]}</span></p>
               ${!isCorrect ? `<p class="text-xs text-emerald-400">Correcta: ${q.options[q.correct]}</p>` : ''}
             </div>
@@ -277,7 +290,23 @@
         resultsList.appendChild(item);
       });
 
-      document.getElementById('score-summary').innerText = `Aciertos: ${score} de ${allQuestions.length} (${((score/allQuestions.length)*100).toFixed(1)}%)`;
+      const percentage = Math.round((score / allQuestions.length) * 100);
+      document.getElementById('score-summary').innerText = `Aciertos: ${score} de ${allQuestions.length}`;
+      document.getElementById('score-percentage').innerText = `Porcentaje final: ${percentage}%`;
+
+      const dictamenElem = document.getElementById('score-dictamen');
+      
+      // EVALUACIÓN SEGÚN LA CONDICIONAL SOLICITADA
+      if (percentage <= 60) {
+        dictamenElem.innerText = "Dictamen: No Satisfactorio";
+        dictamenElem.className = "text-xl font-extrabold uppercase py-2 px-4 rounded-lg inline-block mt-2 bg-rose-900/80 text-rose-200 border border-rose-700";
+      } else if (percentage <= 80) {
+        dictamenElem.innerText = "Dictamen: Satisfactorio";
+        dictamenElem.className = "text-xl font-extrabold uppercase py-2 px-4 rounded-lg inline-block mt-2 bg-amber-900/80 text-amber-200 border border-amber-700";
+      } else {
+        dictamenElem.innerText = "Dictamen: Sobresaliente";
+        dictamenElem.className = "text-xl font-extrabold uppercase py-2 px-4 rounded-lg inline-block mt-2 bg-emerald-900/80 text-emerald-200 border border-emerald-700";
+      }
     }
   </script>
 </body>
