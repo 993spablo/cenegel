@@ -15,22 +15,26 @@
     <div id="screen-welcome" class="text-center space-y-6">
       <h1 class="text-4xl font-extrabold text-indigo-400">Inicio</h1>
       <p class="text-slate-300 text-lg leading-relaxed bg-slate-900/60 p-4 rounded-xl border border-slate-700">
-        "este simulador es meramente de estudio y comprobar conocimientos, esta version es solo una beta y vendran mejoras con el paso del tiempo"
+        "bienvenido, el siguiente examen fue creado con preguntas de creación propia con ayuda de la guía para el sustentante de CENEVAL, de la misma manera el simulador es únicamente para comprobar conocimientos y saber que se debe de estudiar"
       </p>
-      <div class="text-sm text-slate-400 space-y-1">
-        <p>• <strong>Bloque 1:</strong> 30 preguntas sin repetir de Administración (al azar del banco de 60)</p>
-        <p>• <strong>Bloque 2:</strong> 20 preguntas sin repetir de Redacción Indirecta (al azar del banco de 30)</p>
+      <div class="text-sm text-slate-400 space-y-1 bg-slate-900/40 p-3 rounded-lg border border-slate-800">
+        <p>• <strong>Bloque 1:</strong> 80 preguntas aleatorias de Administración (de un banco de 120)</p>
+        <p>• <strong>Bloque 2:</strong> 20 preguntas aleatorias de Redacción Indirecta (de un banco de 30)</p>
+        <p class="text-amber-400 font-semibold pt-1">⏱️ Límite de tiempo: 2 minutos por pregunta</p>
       </div>
       <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition duration-200 transform hover:scale-105 shadow-lg">
-        Comenzar
+        Comenzar Examen
       </button>
     </div>
 
     <!-- PANTALLA DEL CUESTIONARIO -->
     <div id="screen-quiz" class="hidden space-y-6">
-      <div class="flex justify-between items-center text-sm text-slate-400 border-b border-slate-700 pb-3">
+      <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-3">
         <span id="quiz-category" class="font-semibold text-indigo-400">Categoría</span>
-        <span id="quiz-progress">Pregunta 1 de 50</span>
+        <div class="flex items-center gap-4">
+          <span id="quiz-timer" class="font-mono font-bold text-amber-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">02:00</span>
+          <span id="quiz-progress" class="text-slate-400">Pregunta 1 de 100</span>
+        </div>
       </div>
 
       <div id="quiz-question" class="text-lg font-medium text-slate-100 min-h-[60px]">
@@ -91,7 +95,7 @@
   </div>
 
   <script>
-    // BANCO DE 60 PREGUNTAS DE ADMINISTRACIÓN
+    // BANCO DE 120 PREGUNTAS DE ADMINISTRACIÓN
     const rawAdminQuestions = [
       { q: "1. Una empresa de servicios bancarios realiza una evaluación de desempeño mediante encuestas a clientes y detecta que los asesores tienen alto conocimiento técnico pero carecen de escucha activa y empatía. ¿Qué elemento debe incluirse en el plan de capacitación?", options: ["Transmisión de información técnica", "Desarrollo de habilidades duras", "Desarrollo de actitudes e inteligencia emocional", "Capacitación en procesos normativos"], correct: 2 },
       { q: "2. Conforme al Artículo 28 de la Ley Federal del Trabajo en México, cuando se contrata a un trabajador mexicano para prestar servicios en el extranjero, ¿cuál de las siguientes condiciones es de cumplimiento obligatorio?", options: ["Las condiciones laborales deben estar condicionadas a la productividad en el país de destino.", "El reclutamiento debe realizarse únicamente por agencias privadas internacionales.", "Las condiciones laborales deben ser dignas e igualitarias a las otorgadas a los trabajadores de ese país.", "El trabajador renuncia a la jurisdicción de las autoridades mexicanas al salir del país."], correct: 2 },
@@ -132,7 +136,7 @@
       { q: "37. Una empresa presenta un activo circulante de $200,000 y un pasivo circulante de $100,000. ¿Cuál es su Razón de Liquidez Corriente?", options: ["0.5", "1.0", "2.0", "3.0"], correct: 2 },
       { q: "38. La diferencia entre el Activo Circulante y el Pasivo Circulante operacional de una entidad se denomina:", options: ["Capital de trabajo neto", "Utilidad antes de impuestos (UAI)", "Valor Presente Neto (VPN)", "Flujo de efectivo descontado"], correct: 0 },
       { q: "39. Una empresa adquiere maquinaria por $1,000,000 pagando una renta mensual por su uso sin opción de compra ni propiedad del activo al final del contrato. Este esquema se conoce como:", options: ["Arrendamiento financiero", "Arrendamiento puro", "Crédito hipotecario", "Factoraje con recurso"], correct: 1 },
-      { q: "40. Si el Valor Presente Neto (VPN) de un proyecto de inversión calculated a una tasa de descuento del 10% es igual a cero, significa que:", options: ["El proyecto arroja pérdidas financieras directas.", "La Tasa Interna de Retorno (TIR) es exactamente igual al 10%.", "El proyecto debe rechazarse inmediatamente.", "El tiempo de recuperación es infinito."], correct: 1 },
+      { q: "40. Si el Valor Presente Neto (VPN) de un proyecto de inversión calculado a una tasa de descuento del 10% es igual a cero, significa que:", options: ["El proyecto arroja pérdidas financieras directas.", "La Tasa Interna de Retorno (TIR) es exactamente igual al 10%.", "El proyecto debe rechazarse inmediatamente.", "El tiempo de recuperación es infinito."], correct: 1 },
       { q: "41. ¿Cuál es la herramienta financiera que proyecta las entradas y salidas de efectivo esperadas en una organización para anticipar faltantes de liquidez?", options: ["Presupuesto de capital", "Balance general proforma", "Presupuesto de flujo de caja (Cash Flow)", "Estado de variaciones en el capital"], correct: 2 },
       { q: "42. Si una empresa incrementa su apalancamiento financiero mediante la emisión de deuda a tasa fija para financiar proyectos rentables, la consecuencia sobre el rendimiento para los accionistas es:", options: ["Incrementa el riesgo y potencializa el rendimiento sobre el capital", "Disminuye el riesgo operativo a cero", "Garantiza un costo de capital nulo", "Elimina el pago de intereses adeudados"], correct: 0 },
       { q: "43. Un analista financiero requiere medir la capacidad de la empresa para cubrir sus obligaciones de corto plazo utilizando exclusivamente sus activos más líquidos, excluyendo los inventarios. El indicador aplicable es:", options: ["Prueba del ácido (Liquidez severa)", "Margen de utilidad bruta", "Rotación de activo total", "Razón de endeudamiento"], correct: 0 },
@@ -152,7 +156,67 @@
       { q: "57. Una herramienta estratégica que permite analizar las actividades primarias y de soporte de una empresa para identificar fuentes de ventaja competitiva es:", options: ["La cadena de valor", "Las cinco fuerzas de Porter", "La matriz Ansoff", "El balance de comprobación"], correct: 0 },
       { q: "58. Una empresa diversificada evalúa una Unidad Estratégica de Negocios (UEN) que posee una alta participación de mercado en una industria de bajo crecimiento. En la Matriz BCG, esta unidad se clasifica como:", options: ["Vaca generadora de efectivo", "Estrella", "Interrogación", "Perro"], correct: 0 },
       { q: "59. El proceso que consiste en comparar las prácticas, procesos e indicadores de desempeño de una empresa con los líderes de la industria para implementar mejoras se denomina:", options: ["Benchmarking", "Reingeniería", "Outsourcing", "Empowerment"], correct: 0 },
-      { q: "60. Durante la fase de control del proceso administrativo, la dirección compara los resultados reales obtenidos contra los estándares preestablecidos. Si se detectan desviaciones significativas, la acción inmediata debe ser:", options: ["Aplicar medidas correctivas sobre las causas raíz del desempeño", "Ignorar las variaciones si el presupuesto global no se sobrepasó", "Modificar retroactivamente los planes para hacerlos coincidir con los resultados", "Despedir inmediatamente al personal operativo"], correct: 0 }
+      { q: "60. Durante la fase de control del proceso administrativo, la dirección compara los resultados reales obtenidos contra los estándares preestablecidos. Si se detectan desviaciones significativas, la acción inmediata debe ser:", options: ["Aplicar medidas correctivas sobre las causas raíz del desempeño", "Ignorar las variaciones si el presupuesto global no se sobrepasó", "Modificar retroactivamente los planes para hacerlos coincidir con los resultados", "Despedir inmediatamente al personal operativo"], correct: 0 },
+      { q: "61. Una empresa de alimentos registra frecuentes errores en el armado de pedidos de exportación. ¿Qué herramienta de gestión de Recursos Humanos debe aplicarse para determinar las acciones formativas requeridas?", options: ["Evaluación de Desempeño 360°", "Detección de Necesidades de Capacitación (DNC)", "Análisis de Valuación de Puestos", "Auditoría de Clima Organizacional"], correct: 1 },
+      { q: "62. Conforme a la legislación laboral mexicana, al formalizar la relación de trabajo sin temporalidad definida, el periodo de prueba ordinario no podrá exceder de:", options: ["30 días", "90 días", "180 días", "365 días"], correct: 0 },
+      { q: "63. Un hospital privado evalúa contratar a un médico especialista para dirigir Cirugía. ¿Qué documento debe consultarse prioritariamente para revisar los requisitos?", options: ["Tabulador salarial", "Perfil y descripción del puesto", "Reglamento Interior", "Contrato colectivo"], correct: 1 },
+      { q: "64. Una empresa identifica ausentismo por fatiga laboral y estrés crónico. Para alinearse con las normas de salud mental en el trabajo, debe implementar medidas basadas en:", options: ["NOM-019-STPS", "NOM-035-STPS", "NOM-025-STPS", "NOM-030-STPS"], correct: 1 },
+      { q: "65. Durante un procedimiento de conciliación entre sindicato y empresa en México, ¿cuál es el órgano legal competente?", options: ["Centro Federal de Conciliación y Registro Laboral", "Secretaría de Economía", "Tribunal Fiscal", "INADEM"], correct: 0 },
+      { q: "66. Una tienda busca seleccionar vendedores para temporada navideña evaluando estabilidad emocional y razonamiento de forma rápida y masiva. La técnica adecuada es:", options: ["Assessment Center de dos días", "Batería de pruebas psicométricas estandarizadas", "Entrevista de grupo no estructurada", "Estudio socioeconómico"], correct: 1 },
+      { q: "67. Un colaborador con 10 años de antigüedad es despedido sin causa justificada. ¿A qué indemnización constitucional tiene derecho además de sus finiquitos?", options: ["12 días por año", "20 días por año", "3 meses de salario integrado", "6 meses de salario base"], correct: 2 },
+      { q: "68. Una consultora desea diseñar un plan de desarrollo para sus analistas con miras a ocupar puestos directivos a mediano plazo. La herramienta es:", options: ["Plan de carrera y sucesión", "Matriz de valuación por puntos", "Encuesta de salarios", "Programa de inducción"], correct: 0 },
+      { q: "69. Un esquema establece que el gerente recibirá un sueldo fijo mensual más un bono trimestral si alcanza la cuota. Esta estructura corresponde a un salario:", options: ["Por destajo", "Mixto", "En especie", "Mínimo profesional"], correct: 1 },
+      { q: "70. Se detecta que los expedientes del personal carecen de constancia de situación fiscal. ¿En qué etapa se presentó esta omisión?", options: ["Reclutamiento externo", "Contratación y alta administrativa", "Capacitación de inducción", "Evaluación del desempeño"], correct: 1 },
+      { q: "71. Una empresa otorga tiempo libre pagado, membresías de gimnasio y guardería. Estas acciones forman parte de una estrategia de:", options: ["Salario emocional", "Prestaciones mínimas de ley", "Indemnización laboral", "Gratificación por jubilación"], correct: 0 },
+      { q: "72. ¿Cuál es la principal diferencia legal entre la terminación por renuncia voluntaria y por despido unjustificado?", options: ["La renuncia no da derecho a días trabajados", "El despido injustificado genera el derecho a indemnización constitucional", "La renuncia exime del pago de prima vacacional", "El despido elimina la obligación del aguinaldo"], correct: 1 },
+      { q: "73. En el modelo SERVQUAL, ¿cuál dimensión evalúa la disposición de ayudar a los clientes y proveer un servicio rápido?", options: ["Elementos tangibles", "Capacidad de respuesta", "Empatía", "Confiabilidad"], correct: 1 },
+      { q: "74. Para cumplir la obligación de capacitar a los trabajadores según la LFT, las empresas con más de 50 trabajadores deben constituir la:", options: ["Comisión Mixta de Capacitación, Adiestramiento y Productividad", "Junta de Conciliación Interna", "Sociedad Cooperativa", "Comisión de Escalafón"], correct: 0 },
+      { q: "75. Un supervisor ascendido a Gerente requiere desarrollar competencias de negociación directiva. ¿Qué modalidad es más recomendable?", options: ["Adiestramiento en maquinaria", "Coaching directivo y mentoría", "Alfabetización digital", "Taller de seguridad en almacén"], correct: 1 },
+      { q: "76. Una marca reúne a 10 consumidoras habituales durante dos horas para probar texturas y discutir libremente. ¿Qué técnica aplica?", options: ["Entrevista en profundidad", "Focus group", "Prueba de usabilidad", "Encuesta por muestreo"], correct: 1 },
+      { q: "77. En una ciudad de 800,000 hab., el 30% tiene perro y consume 10 kg/mes a $50/kg. ¿Cuál es el mercado potencial mensual en valor?", options: ["$2,400,000", "$120,000,000", "$240,000,000", "$12,000,000"], correct: 3 },
+      { q: "78. Una campaña de autos de lujo usa el eslogan 'Pertenecer al selecto grupo que define el camino'. Apela principalmente a:", options: ["Motivación de ahorro", "Motivación de estatus y reconocimiento", "Motivación afectiva", "Bajo costo de mantenimiento"], correct: 1 },
+      { q: "79. Un refresco con alto contenido calórico en México debe aplicar la siguiente acción en cumplimiento con la NOM-051:", options: ["Ocultar lista de ingredientes", "Incluir sellos octogonales negros de advertencia", "Eliminar marca registrada", "Usar empaque de dos colores"], correct: 1 },
+      { q: "80. Ofrecer degustaciones gratuitas con maridaje en restaurantes de alta gama para introducir un vino es un ejemplo de:", options: ["Publicidad masiva", "Promoción de ventas mediante muestreo directo", "Venta por cambaceo", "Marketing de guerrilla"], correct: 1 },
+      { q: "81. Al vender cómputo, destacar el procesador de última generación, RAM de 32GB y chasis de aluminio corresponde a:", options: ["Atributos intangibles", "Atributos tangibles y técnicos", "Servicios de posventa", "Distribución exclusiva"], correct: 1 },
+      { q: "82. Ofrecer café embotellado frío en supermercados e hipermercados donde no se tenía presencia es una estrategia Ansoff de:", options: ["Penetración de mercado", "Desarrollo de mercado", "Desarrollo de producto", "Diversificación"], correct: 1 },
+      { q: "83. Dividir a los clientes según su estilo de vida, valores y actividades de ocio es una segmentación:", options: ["Geográfica", "Demográfica", "Psicográfica", "Conductual"], correct: 2 },
+      { q: "84. Fijar un precio inicial muy elevado para capturar a los consumidores menos sensibles al precio antes de ingresar competidores es:", options: ["Precio de penetración", "Precio de descremado (skimming)", "Precio de costo marginal", "Precio de valor bajo"], correct: 1 },
+      { q: "85. Si los distribuidores tardan semanas en entregar pedidos por fallas en su red de camiones, la empresa debe intervenir en la P de:", options: ["Producto", "Precio", "Plaza (Distribución)", "Promoción"], correct: 2 },
+      { q: "86. La métrica de mercadotecnia que calcula la inversión requerida para atraer a un nuevo cliente es:", options: ["ROE", "CAC (Costo de Adquisición de Clientes)", "PPM", "VPN"], correct: 1 },
+      { q: "87. Rediseñar un empaque para que sea 100% biodegradable agregando un código QR sobre el origen del producto fortalece su:", options: ["Estrategia de marca y diferenciación", "Canal de distribución largo", "Costo de ventas unitario", "Sistema de inventario PEPS"], correct: 0 },
+      { q: "88. El sistema informático para gestionar preferencias, quejas y consultas enviando ofertas personalizadas es:", options: ["WMS", "CRM", "ERP", "BSC"], correct: 1 },
+      { q: "89. Vender la misma galleta en 50 países adaptando únicamente la imagen promocional y comercial a festividades locales es:", options: ["Estandarización total", "Estandarización de producto con adaptación de comunicación", "Adaptación de producto", "Invención dual"], correct: 1 },
+      { q: "90. Aplicar 1,200 cuestionarios estructurados a una muestra probabilística para determinar demanda es una investigación:", options: ["Cualitativa exploratoria", "Cuantitativa descriptiva o causal", "Documental histórica", "Observacional"], correct: 1 },
+      { q: "91. Inversión inicial de $50,000,000 y flujos actualizados de $65,000,000. ¿Cuál es la Relación Beneficio/Costo (B/C)?", options: ["0.76", "1.30", "0.30", "1.50"], correct: 1 },
+      { q: "92. Préstamo de $200,000 a interés simple del 12% anual. Si se liquida un monto total de $212,000, ¿cuál fue la duración?", options: ["3 meses", "6 meses", "9 meses", "12 meses"], correct: 1 },
+      { q: "93. Fondo que aporta $2,000,000 a una startup a cambio de acciones y asiento en el consejo en etapa de riesgo es:", options: ["Crédito comercial", "Venture Capital", "Factoraje", "Certificado bursátil"], correct: 1 },
+      { q: "94. Ceder los derechos de cobro de facturas a 120 días a un banco a cambio de efectivo inmediato con descuento es:", options: ["Arrendamiento puro", "Factoraje financiero", "Crédito refaccionario", "Emisión de pagarés"], correct: 1 },
+      { q: "95. Un inversionista conservador que busca preservar capital con bajo riesgo en México debe colocar su dinero en:", options: ["Acciones tecnológicas", "CETES y bonos gubernamentales", "Criptomonedas", "Derivados volátiles"], correct: 1 },
+      { q: "96. Los activos que se esperan convertir en efectivo en un lapso no mayor a un año en el Balance General son:", options: ["Activo Fijo", "Activo Circulante", "Pasivo a Largo Plazo", "Capital Social"], correct: 1 },
+      { q: "97. Activo Circulante = $500,000, Inventarios = $200,000 y Pasivo Circulante = $150,000. La Prueba del Ácido es:", options: ["3.33", "2.00", "1.33", "0.66"], correct: 1 },
+      { q: "98. Precio unitario = $100, Costo variable = $60, Costos fijos = $400,000. El punto de equilibrio en unidades es:", options: ["4,000 unidades", "6,666 unidades", "10,000 unidades", "25,000 unidades"], correct: 2 },
+      { q: "99. Utilizar flotillas de camiones por 2 años sin opción ni intención de compra al final corresponde a:", options: ["Arrendamiento financiero", "Arrendamiento puro u operativo", "Crédito hipotecario", "Acciones preferentes"], correct: 1 },
+      { q: "100. Si el VPN de un proyecto a una tasa del 12% es de $1,500,000, la decisión correcta es:", options: ["Rechazar el proyecto", "Aceptar el proyecto por generar rendimiento superior al costo de capital", "Indiferente", "Reducir la inversión"], correct: 1 },
+      { q: "101. El presupuesto que calcula la materia prima a comprar considerando el plan de producción e inventarios es:", options: ["Presupuesto de Ventas", "Presupuesto de Compras de Materiales", "Presupuesto de Gastos", "Cash Flow"], correct: 1 },
+      { q: "102. El rendimiento mínimo exigido por los proveedores de capital (deuda y patrimonio) para financiar activos es:", options: ["TIR", "WACC (Costo Promedio Ponderado de Capital)", "Índice de Liquidez", "Margen Operativo"], correct: 1 },
+      { q: "103. Utilidad Bruta de $400,000 sobre Ventas Totales de $1,000,000. El Margen Bruto es de:", options: ["25%", "40%", "60%", "140%"], correct: 1 },
+      { q: "104. Pagar un dividendo fijo anual a los accionistas sin importar las fluctuaciones en utilidades corresponde a:", options: ["Acciones ordinarias", "Acciones preferentes", "Bonos cupón cero", "Títulos de deuda"], correct: 1 },
+      { q: "105. El indicador que mide la eficiencia para generar ventas por cada peso invertido en activos totales es:", options: ["Rotación de inventarios", "Rotación de activos totales", "Prueba del ácido", "Razón de endeudamiento"], correct: 1 },
+      { q: "106. Dos aerolíneas que se alían para compartir rutas mediante un consorcio sin fusionarse legalmente realizan una:", options: ["Fusión por integración", "Alianza estratégica / Asociación flexible", "Adquisición hostil", "Liquidación"], correct: 1 },
+      { q: "107. La entrada de competidores con precios bajos es una __________; la reputación del chef ejecutivo es una __________.", options: ["debilidad - oportunidad", "amenaza - fortaleza", "fortaleza - amenaza", "oportunidad - debilidad"], correct: 1 },
+      { q: "108. Para definir formalmente la estructura jerárquica y líneas de mando entre áreas se debe elaborar un:", options: ["Diagrama de flujo", "Organigrama estructural", "Balanced Scorecard", "Análisis PESTEL"], correct: 1 },
+      { q: "109. La herramienta de software para integrar inventarios, nómina, ventas y contabilidad en tiempo real es:", options: ["CRM", "ERP (Enterprise Resource Planning)", "WMS", "EDI"], correct: 1 },
+      { q: "110. Para evitar pérdidas por vencimiento usando los insumos más antiguos primero en producción se usa el método:", options: ["UEPS", "PEPS (Primeras Entradas, Primeras Salidas)", "Promedio Ponderado", "Conteo Cíclico"], correct: 1 },
+      { q: "111. Según el Art. 46 del Código de Comercio, los comerciantes deben conservar contabilidad y comprobantes por mínimo:", options: ["3 años", "5 años", "10 años", "20 años"], correct: 2 },
+      { q: "112. La razón social, el objeto social y el importe del capital social son requisitos obligatorios en:", options: ["Tabulador de sueldos", "Escritura u Póliza Constitutiva", "Manual de operaciones", "Lista de proveedores"], correct: 1 },
+      { q: "113. Registrar una empresa por internet en un día, sin costo y sin fedatario público se realiza mediante la figura:", options: ["S.A. de C.V.", "S.A.S. (Sociedad por Acciones Simplificada)", "S. de R.L.", "S.C."], correct: 1 },
+      { q: "114. Transferir la propiedad de un pagaré firmando en el reverso con la leyenda 'páguese a la orden de...' es un:", options: ["Endoso en propiedad", "Endoso en procuración", "Endoso en garantía", "Aval bancario"], correct: 0 },
+      { q: "115. Adquirir granjas de cultivo de caña para asegurar el abastecimiento de azúcar en una embotelladora es:", options: ["Integración vertical hacia atrás", "Integración vertical hacia adelante", "Integración horizontal", "Diversificación conglomerada"], correct: 0 },
+      { q: "116. La existencia de pocas barreras de entrada en un sector industrial según Porter provoca que:", options: ["La rivalidad baje a cero", "La amenaza de nuevos competidores sea alta", "El poder del cliente baje", "Los sustitutos desaparezcan"], correct: 1 },
+      { q: "117. Limpieza de habitaciones y atención en recepción dentro de una cadena hotelera son en la Cadena de Valor:", options: ["Actividades de soporte", "Actividades primarias u operativas", "Gastos administrativos", "Margen financiero"], correct: 1 },
+      { q: "118. El indicador 'Tiempo de ciclo de producción de medicamentos' dentro del BSC corresponde a la perspectiva de:", options: ["Clientes", "Procesos Internos", "Financiera", "Aprendizaje y Crecimiento"], correct: 1 },
+      { q: "119. Adquirir salas de cine, un astillero naval y una fábrica de calzado por parte de un mismo grupo es:", options: ["Diversificación conglomerada (no relacionada)", "Diversificación concéntrica", "Integración horizontal", "Penetración de mercado"], correct: 0 },
+      { q: "120. La primera etapa del proceso de control tras detectar variaciones sobre lo planificado en el presupuesto es:", options: ["Modificar metas de venta", "Comparar desempeño real contra el estándar y analizar variaciones", "Sancionar al personal", "Eliminar el presupuesto"], correct: 1 }
     ];
 
     // BANCO DE 30 PREGUNTAS DE REDACCIÓN INDIRECTA
@@ -203,15 +267,16 @@
     let allQuestions = [];
     let userAnswers = [];
     let selectedOption = null;
+    let timerInterval = null;
+    let timeLeft = 120; // 2 minutos por pregunta
 
     function startQuiz() {
-      // 1° Bloque: 30 de Administración al azar sin repetir
-      const sampledAdmin = shuffleAndSample(rawAdminQuestions, 30).map(q => ({ ...q, category: "Administración" }));
+      // 1° Bloque: 80 de Administración al azar sin repetir
+      const sampledAdmin = shuffleAndSample(rawAdminQuestions, 80).map(q => ({ ...q, category: "Administración" }));
       
       // 2° Bloque: 20 de Redacción Indirecta al azar sin repetir
       const sampledRedaccion = shuffleAndSample(rawRedaccionQuestions, 20).map(q => ({ ...q, category: "Redacción Indirecta" }));
 
-      // Se concatenan asegurando que las de Administración salgan primero
       allQuestions = [...sampledAdmin, ...sampledRedaccion];
       currentQuestionIndex = 0;
       userAnswers = [];
@@ -219,6 +284,37 @@
       document.getElementById('screen-welcome').classList.add('hidden');
       document.getElementById('screen-quiz').classList.remove('hidden');
       showQuestion();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timeLeft = 120;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          // Si expira el tiempo, avanza automáticamente guardando respuesta nula (-1)
+          nextQuestion(true);
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      const timerElem = document.getElementById('quiz-timer');
+      timerElem.innerText = formatted;
+
+      if (timeLeft <= 20) {
+        timerElem.className = "font-mono font-bold text-rose-400 bg-slate-900 px-3 py-1 rounded-lg border border-rose-700 animate-pulse";
+      } else {
+        timerElem.className = "font-mono font-bold text-amber-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-700";
+      }
     }
 
     function showQuestion() {
@@ -240,6 +336,8 @@
         btn.onclick = () => selectOption(idx, btn);
         optionsContainer.appendChild(btn);
       });
+
+      startTimer();
     }
 
     function selectOption(index, btnElement) {
@@ -252,8 +350,15 @@
       document.getElementById('btn-next').disabled = false;
     }
 
-    function nextQuestion() {
-      userAnswers.push(selectedOption);
+    function nextQuestion(autoTimeout = false) {
+      clearInterval(timerInterval);
+
+      if (autoTimeout && selectedOption === null) {
+        userAnswers.push(-1); // -1 representa sin contestar por límite de tiempo
+      } else {
+        userAnswers.push(selectedOption);
+      }
+
       currentQuestionIndex++;
 
       if (currentQuestionIndex < allQuestions.length) {
@@ -264,6 +369,7 @@
     }
 
     function showResults() {
+      clearInterval(timerInterval);
       document.getElementById('screen-quiz').classList.add('hidden');
       document.getElementById('screen-results').classList.remove('hidden');
 
@@ -272,17 +378,24 @@
       resultsList.innerHTML = '';
 
       allQuestions.forEach((q, idx) => {
-        const isCorrect = userAnswers[idx] === q.correct;
+        const userAns = userAnswers[idx];
+        const isCorrect = userAns === q.correct;
         if (isCorrect) score++;
 
         const item = document.createElement('div');
         item.className = `p-4 rounded-xl border ${isCorrect ? 'border-emerald-800/60 bg-emerald-950/20' : 'border-rose-800/60 bg-rose-950/20'}`;
+        
+        let userAnsText = "Tiempo agotado (Sin contestar)";
+        if (userAns !== -1 && userAns !== null) {
+          userAnsText = q.options[userAns];
+        }
+
         item.innerHTML = `
           <div class="flex items-start gap-2">
             <span class="${isCorrect ? 'text-emerald-400' : 'text-rose-400'} font-bold">${isCorrect ? '✓' : '✗'}</span>
             <div class="text-sm space-y-1">
               <p class="font-medium text-slate-200"><span class="text-xs text-indigo-400 font-semibold">[${q.category}]</span> ${q.q}</p>
-              <p class="text-xs text-slate-400">Tu respuesta: <span class="${isCorrect ? 'text-emerald-300' : 'text-rose-300'}">${q.options[userAnswers[idx]]}</span></p>
+              <p class="text-xs text-slate-400">Tu respuesta: <span class="${isCorrect ? 'text-emerald-300' : 'text-rose-300'}">${userAnsText}</span></p>
               ${!isCorrect ? `<p class="text-xs text-emerald-400">Correcta: ${q.options[q.correct]}</p>` : ''}
             </div>
           </div>
@@ -296,7 +409,7 @@
 
       const dictamenElem = document.getElementById('score-dictamen');
       
-      // EVALUACIÓN SEGÚN LA CONDICIONAL SOLICITADA
+      // EVALUACIÓN SEGÚN LA ESCALA SOLICITADA
       if (percentage <= 60) {
         dictamenElem.innerText = "Dictamen: No Satisfactorio";
         dictamenElem.className = "text-xl font-extrabold uppercase py-2 px-4 rounded-lg inline-block mt-2 bg-rose-900/80 text-rose-200 border border-rose-700";
